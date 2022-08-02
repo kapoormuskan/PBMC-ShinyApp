@@ -5,4 +5,4 @@ uwot
 DT
 ggplot2
 plotly
-scCustomize
+https://github.com/samuel-marsh/scCustomize/archive/refs/tags/v0.7.0.tar.gz

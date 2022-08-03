@@ -2,4 +2,7 @@ shiny
 shinythemes
 DT
 Seurat
+uwot
+ggplot2
+plotly
 github::samuel-marsh/scCustomize

@@ -4,9 +4,10 @@ library(Seurat)
 library(uwot)
 library(DT)
 library(ggplot2)
-library(plotly)
+#library(plotly)
 library(scCustomize)
-
+#library(profvis)
+library(shinycssloaders)
 #Read .csv files
 datos <-read.csv("data/ICLN98_HumanMeta.csv",dec = ",")
 data <-read.csv("data/ICLN00_HumanMeta.csv",dec = ",")
@@ -94,34 +95,47 @@ Moreover, it will imporve cell type and tissues specific gene expression data fo
                                     br(),
                                     
                                     column(width = 4,
-                                           textInput("gene2", label = "Gene Symbol/Ensemble ID", value = "GAPDH")),
-                                           submitButton("Update Now", icon=("")),
+                                           textInput("gene2", label = "Gene Symbol/Ensembl ID", value = "GAPDH")),
+                                    submitButton("Update Now", icon=("")),
                                     
                                     column(width = 12,
-                                           plotOutput("genePlot2",height=700,width="1200px")),
-                                    
-                                  
+                                           withSpinner(plotOutput("genePlot2",height=700,width="1200px"))),
                                     
                                     
+                                    
+                                    
+
+                                    column(width = 12,
+                                           selectInput("dataset5", label = h3("VIOLIN PLOT"),
+                                                       choices = list("Intergrated"="set_5"),
+                                                       selected = "set_5"),
+                                           
+                                           withSpinner(plotOutput("vPlot5",height=700,width="2900px"
+                                                      
+                                           ))),
                                     column(width = 12,
                                            selectInput("dataset5", label = h3("ALL TISSUES COMBINED"),
                                                        choices = list("Intergrated"="set_5"),
                                                        selected = "set_5"),
                                            
-                                           plotOutput("genePlot6",height=700,width="1200px",
-                                                      dblclick="plot_1_dblclick",
-                                                      brush=brushOpts(
-                                                        id="plot1_brush",
-                                                        resetOnNew = TRUE
-                                                      ))),
-                                    column(width = 12,
-                                           selectInput("dataset5", label = h3("INTEGRATED"),
-                                                       choices = list("Intergrated"="set_3"),
-                                                       selected = "set_5"),
-                                          
-                                           plotOutput("vPlot5",height=700,width="2900px"
-                                                      
-                                           ))
+                                           
+                                           #radioButtons("prev","The Integrated Seurat object of Four Tissues:", c("Preview","No Preview"),selected="Preview", inline=TRUE),
+                                           radioButtons(inputId = "run","The Integrated Seurat object of Four Tissues:", c("Preview","No Preview"),selected="No Preview", inline=TRUE),
+                                           
+                                           hr(),
+                                           p("The Integrated Seurat object of Four Tissues:", style = "color:#888888;"),
+                                           
+                                           withSpinner(plotOutput("genePlot6",height=700,width="1200px",
+                                                                  dblclick="plot_1_dblclick",
+                                                                  brush=brushOpts(
+                                                                    id="plot1_brush",
+                                                                    resetOnNew = TRUE
+                                                                  ))),
+                                           textOutput("select")
+                                    
+                                           
+                                    )
+                                  
                                     
                                     
                                     
@@ -136,7 +150,6 @@ Moreover, it will imporve cell type and tissues specific gene expression data fo
                            
                 )
 )
-
 
 
 #server.R
@@ -205,35 +218,70 @@ server<- function(input,output){
     ))
   
   
-
+  
   dataset5Input <- reactive({
     infile <- data_list[[input$dataset5]]
     
   })
   
   
-#output plot
+  #output plot
   
   output$genePlot2 <- renderPlot({
+    Sys.sleep(10)
     FeaturePlot_scCustom(dataset5Input(),split.by="Tissue",num_columns = 2,reduction="Tissue_UMAP",features=(input$gene2))
   })
   
- 
- 
-
   
+#  output$genePlot6<-renderPlot({
+    #Sys.sleep(5)
+ #   switch(input$prev, 
+ #                 "Preview"=FeaturePlot_scCustom(dataset5Input(),reduction="umap",features= (input$gene2)),
+ #          "No Preview"= "nothing"
+#                  )
+ #   Sys.sleep(10)
+#  })
   
-  output$genePlot6 <- renderPlot({
-    
-    FeaturePlot_scCustom(dataset5Input(),reduction="umap",features= (input$gene2))
+  observe({
+    observeEvent(input$run,{
+      if (input$run=="Preview"){
+        output$genePlot6<- renderPlot({
+          FeaturePlot_scCustom(dataset5Input(),reduction="umap",features= (input$gene2))
+        })
+      }
+      else if (input$run=="No Preview"){
+        output$select<- renderText({
+          #input$gene2
+          "No Preview Selected"
+          
+        })
+      }
+ 
+    })
   })
+  
+  
+#  output$genePlot6 <- renderPlot({
+#    Sys.sleep(10)
+ #   switch(input$preview,
+#    "preview"=FeaturePlot_scCustom(dataset5Input(),reduction="umap",features= (input$gene3))
+#    )
+#  })
+  
+
   output$vPlot5 <- renderPlot({
+    Sys.sleep(10)
     VlnPlot(dataset5Input(),split.by="MainCluster",features = (input$gene2),split.plot=TRUE)
     
     
     
   })
-
+  
 }
 
 shinyApp(ui, server)
+
+
+
+
+

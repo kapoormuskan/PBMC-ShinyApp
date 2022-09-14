@@ -4,5 +4,5 @@ DT
 Seurat
 uwot
 ggplot2
-plotly
+shinycssloaders
 github::samuel-marsh/scCustomize

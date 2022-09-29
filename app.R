@@ -17,7 +17,7 @@ da <-read.csv("data/THY98_HumanMeta.csv",dec = ",")
 
 # Read the .rds seurat file
 # This is read in global.R
-#set_5 <- readRDS("data/ImmuneTissuesAllWithNewReduction.rds")
+set_5 <- readRDS("data/ImmuneTissuesAllWithNewReduction.rds")
 
 
 #pulling out data from the integrated object

@@ -5,4 +5,6 @@ Seurat
 uwot
 ggplot2
 shinycssloaders
+shinyalert
+shinydisconnect
 github::samuel-marsh/scCustomize

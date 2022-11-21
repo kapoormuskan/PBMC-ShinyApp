@@ -6,14 +6,16 @@ library(DT)
 library(ggplot2)
 #library(plotly)
 library(scCustomize)
-#library(profvis)
+library(shinyalert)
+library(shinydisconnect)
 library(shinycssloaders)
 #Read .csv files
-datos <-read.csv("data/ICLN98_HumanMeta.csv",dec = ",")
-data <-read.csv("data/ICLN00_HumanMeta.csv",dec = ",")
-dat <-read.csv("data/THY00_HumanMeta.csv",dec = ",")
-da <-read.csv("data/THY98_HumanMeta.csv",dec = ",")
-
+#data <-read.csv("data/table_shiny.csv",dec = ",")
+datos <-suppressWarnings(read.csv("data/ICLN98_HumanMeta.csv",dec=","))
+data <-read.csv("data/BM_gene.csv",dec = ",")
+dat <-read.csv("data/SP_gene.csv",dec = ",")
+da <-read.csv("data/TH_gene.csv",dec = ",")
+d <-read.csv("data/LN_gene.csv",dec = ",")
 
 # Read the .rds seurat file
 # This is read in global.R
@@ -33,8 +35,9 @@ data_list = list(set_5=set_5)
 
 ui <- fluidPage(theme = shinytheme("cerulean"),
                 
-                titlePanel("Visualization of sc-RNAseq Data"),
-                navbarPage("FAANG",
+                
+                titlePanel(h1("Visualization of sc-RNAseq Data")),
+                navbarPage(" ",
                            tabPanel(icon("home"),
                                     
                                     fluidRow(column(tags$img(src="Pig.png",width="250px",height="200px"),width=2),
@@ -43,7 +46,7 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                                                br(),
                                                p("
 This project aims at understanding pig immune system for food production and translation research. This will provide an immune cell atlas as a basis for future research.
-Moreover, it will imporve cell type and tissues specific gene expression data for genetic selection.
+Moreover, it will improve cell type and tissues specific gene expression data for genetic selection.
 ", 
                                                  style="text-align:justify;color:black;background-color:lavender;padding:15px;border-radius:10px"),
                                                br(),
@@ -53,8 +56,10 @@ Moreover, it will imporve cell type and tissues specific gene expression data fo
                                                  Created clusters of single cell data and proved they are unique and distinguishable. Identified gene expression patterns and markers for different immune cell types.
                                                  Identified tissue specific vs. peripheral immune cell types by comparing against porcine PBMCs
                                                  Identified tissue-specific differences between porcine and human cell types.
-                                                 Used canonical markers, porcine PBMC data, and human tissue-specific data to annotate the porcine immune cell atlas.
-                                                 ",style="text-align:justify;color:black;background-color:papayawhip;padding:15px;border-radius:10px"),
+                                                 Used canonical markers,"
+                                                 , a(href="https://www.frontiersin.org/articles/10.3389/fgene.2021.689406/full", "porcine PBMC data",target="_blank") ,
+                                                 "and human tissue-specific data to annotate the porcine immune cell atlas."
+                                                 ,style="text-align:justify;color:black;background-color:papayawhip;padding:15px;border-radius:10px"),
                                                
                                                width=8),
                                              column(
@@ -67,23 +72,29 @@ Moreover, it will imporve cell type and tissues specific gene expression data fo
                                                  a(href="https://www.faang.org", "Here",target="_blank"),style="text-align:center;color:black"),
                                                
                                                width=2)),
+                                    useShinyalert(),
+                                    
                                     
                                     hr(),
                                     tags$style(".fa-database {color:#e87722}"),
-                                    h3(p(em("Datasets"),icon("database",lib = "font-awesome"),style="color:black;text-align:center")),
+                                    h3(p(em("Gene Expression for Single Cell Immune Tissues"),icon("database",lib = "font-awesome"),style="color:black;text-align:center")),
                                     tabsetPanel(
-                                      tabPanel("ICLN98_HumanMeta",
-                                               fluidRow(column(DT::dataTableOutput("ICLN98_HumanMeta"),
+                                      tabPanel("Immune_Tissues_Meta",
+                                               fluidRow(column(DT::dataTableOutput("Immune_Tissues_Meta"),
                                                                width = 12))),
-                                      tabPanel("ICLN00_HumanMeta",
-                                               fluidRow(column(DT::dataTableOutput("ICLN00_HumanMeta"),
-                                                               width = 12))),
-                                      tabPanel("THY00_HumanMeta",
-                                               fluidRow(column(DT::dataTableOutput("THY00_HumanMeta"),
-                                                               width = 12))),
-                                      tabPanel("THY98_HumanMeta",
-                                               fluidRow(column(DT::dataTableOutput("THY98_HumanMeta"),
-                                                               width = 12)))),
+                                    tabPanel("BM_Gene_List",
+                                             fluidRow(column(DT::dataTableOutput("BM_Gene_List"),
+                                                             width = 12))),
+                                    tabPanel("SP_Gene_List",
+                                             fluidRow(column(DT::dataTableOutput("SP_Gene_List"),
+                                                             width = 12))),
+                                    tabPanel("TH_Gene_List",
+                                             fluidRow(column(DT::dataTableOutput("TH_Gene_List"),
+                                                             width = 12))),
+                           
+                                    tabPanel("LN_Gene_List",
+                                            fluidRow(column(DT::dataTableOutput("LN_Gene_List"),
+                                                             width = 12)))),
                                     
                                     
                                     
@@ -96,8 +107,8 @@ Moreover, it will imporve cell type and tissues specific gene expression data fo
                                     br(),
                                     
                                     column(width = 4,
-                                           textInput("gene2", label = "Gene Symbol/Ensembl ID", value = "GAPDH")),
-                                    submitButton("Update Now", icon=("")),
+                                           textInput("gene2", label = "Gene Symbol/Ensembl ID", value = "CD3E")),
+                                    submitButton("Update Now", icon=(""),useShinyalert()),
                                     
                                     column(width = 12,
                                            withSpinner(plotOutput("genePlot2",height=700,width="1200px"))),
@@ -105,23 +116,23 @@ Moreover, it will imporve cell type and tissues specific gene expression data fo
                                     
                                     
                                     
-
+                                    
                                     column(width = 12,
-                                           selectInput("dataset5", label = h3("VIOLIN PLOT"),
-                                                       choices = list("Intergrated"="set_5"),
+                                           selectInput("dataset5", label = h3("Gene Expression among Clusters"),
+                                                       choices = list("Integrated"="set_5"),
                                                        selected = "set_5"),
                                            
                                            withSpinner(plotOutput("vPlot5",height=700,width="2900px"
-                                                      
+                                                                  
                                            ))),
                                     column(width = 12,
                                            selectInput("dataset5", label = h3("ALL TISSUES COMBINED"),
-                                                       choices = list("Intergrated"="set_5"),
+                                                       choices = list("Integrated"="set_5"),
                                                        selected = "set_5"),
                                            
                                            
                                            #radioButtons("prev","The Integrated Seurat object of Four Tissues:", c("Preview","No Preview"),selected="Preview", inline=TRUE),
-                                           radioButtons(inputId = "run","The Integrated Seurat object of Four Tissues:", c("Preview","No Preview"),selected="No Preview", inline=TRUE),
+                                           radioButtons(inputId = "run","The Integrated Seurat object of Four Tissues:", c("Preview","No Preview"),selected="Preview", inline=TRUE),
                                            
                                            hr(),
                                            p("The Integrated Seurat object of Four Tissues:", style = "color:#888888;"),
@@ -132,11 +143,12 @@ Moreover, it will imporve cell type and tissues specific gene expression data fo
                                                                     id="plot1_brush",
                                                                     resetOnNew = TRUE
                                                                   ))),
+                                           
                                            textOutput("select")
-                                    
+                                           
                                            
                                     )
-                                  
+                                    
                                     
                                     
                                     
@@ -149,15 +161,19 @@ Moreover, it will imporve cell type and tissues specific gene expression data fo
                            )
                            
                            
+                           
                 )
 )
+
 
 
 #server.R
 
 
-server<- function(input,output){
-  output$ICLN98_HumanMeta <- DT::renderDataTable(
+server<- function(input,output, session){
+  
+  
+  output$Immune_Tissues_Meta <- DT::renderDataTable(
     DT::datatable({
       datos
     },
@@ -170,13 +186,13 @@ server<- function(input,output){
     style='bootstrap',
     class= 'cell-border stripe',
     rownames=FALSE,
-    colnames=c(" ","orig.ident","nCount_RNA","nFeature_RNA","SampleID","UmiSums","GenesDetected","prcntTop","prcntMito","DuplicatedBarcodes","PassViability","PassGenesDet","PassLibSize","PassBarcodeFreq","PassAll","Scrublet","PassScrub","nCount_SCT","nFeature_SCT","mapping.score","predicted.cell_ontology_class.score","predicted.cell_ontology_class","predicted.free_annotation.score","predicted.free_annotation")
+    colnames=c("Tissues","Number of cells post QC","Number of Features","Number of Clusters")
     ))
-  output$ICLN00_HumanMeta <- DT::renderDataTable(
+  output$BM_Gene_List <- DT::renderDataTable(
     DT::datatable({
       data
     },
-    options=list(lengthMenu=list(c(5,15,20),c('5','15','20')),pagelength=10,
+    options=list(lengthMenu=list(c(100,400,800),c('100','400','800')),pagelength=10,
                  
                  columnDefs=list(list(className='dt-center',targets="_all"))
     ),
@@ -185,13 +201,13 @@ server<- function(input,output){
     style='bootstrap',
     class= 'cell-border stripe',
     rownames=FALSE,
-    colnames=c(" ","orig.ident","nCount_RNA","nFeature_RNA","SampleID","UmiSums","GenesDetected","prcntTop","prcntMito","DuplicatedBarcodes","PassViability","PassGenesDet","PassLibSize","PassBarcodeFreq","PassAll","Scrublet","PassScrub","nCount_SCT","nFeature_SCT","mapping.score","predicted.cell_ontology_class.score","predicted.cell_ontology_class","predicted.free_annotation.score","predicted.free_annotation")
+    colnames=c("Cluster","Gene")
     ))
-  output$THY00_HumanMeta <- DT::renderDataTable(
+  output$SP_Gene_List <- DT::renderDataTable(
     DT::datatable({
       dat
     },
-    options=list(lengthMenu=list(c(5,15,20),c('5','15','20')),pagelength=10,
+    options=list(lengthMenu=list(c(100,400,800),c('100','400','800')),pagelength=10,
                  
                  columnDefs=list(list(className='dt-center',targets="_all"))
     ),
@@ -200,13 +216,13 @@ server<- function(input,output){
     style='bootstrap',
     class= 'cell-border stripe',
     rownames=FALSE,
-    colnames=c(" ","orig.ident","nCount_RNA","nFeature_RNA","SampleID","UmiSums","GenesDetected","prcntTop","prcntMito","DuplicatedBarcodes","PassViability","PassGenesDet","PassLibSize","PassBarcodeFreq","PassAll","Scrublet","PassScrub","nCount_SCT","nFeature_SCT","mapping.score","predicted.cell_ontology_class.score","predicted.cell_ontology_class","predicted.free_annotation.score","predicted.free_annotation")
+    colnames=c("Cluster","Gene")
     ))
-  output$THY98_HumanMeta <- DT::renderDataTable(
+  output$TH_Gene_List <- DT::renderDataTable(
     DT::datatable({
       da
     },
-    options=list(lengthMenu=list(c(5,15,20),c('5','15','20')),pagelength=10,
+    options=list(lengthMenu=list(c(100,400,800),c('100','400','800')),pagelength=10,
                  
                  columnDefs=list(list(className='dt-center',targets="_all"))
     ),
@@ -215,8 +231,44 @@ server<- function(input,output){
     style='bootstrap',
     class= 'cell-border stripe',
     rownames=FALSE,
-    colnames=c(" ","orig.ident","nCount_RNA","nFeature_RNA","SampleID","UmiSums","GenesDetected","prcntTop","prcntMito","DuplicatedBarcodes","PassViability","PassGenesDet","PassLibSize","PassBarcodeFreq","PassAll","Scrublet","PassScrub","nCount_SCT","nFeature_SCT","mapping.score","predicted.cell_ontology_class.score","predicted.cell_ontology_class","predicted.free_annotation.score","predicted.free_annotation")
+    colnames=c("Cluster","Gene")
     ))
+  output$LN_Gene_List <- DT::renderDataTable(
+    DT::datatable({
+      d
+    },
+    options=list(lengthMenu=list(c(100,400,800),c('100','400','800')),pagelength=10,
+                 
+                 columnDefs=list(list(className='dt-center',targets="_all"))
+    ),
+    filter="top",
+    selection='multiple',
+    style='bootstrap',
+    class= 'cell-border stripe',
+    rownames=FALSE,
+    colnames=c("Cluster","Gene")
+    ))
+  
+  
+  
+  shinyalert(
+    title = "Help",
+    text = "For visualization of individual gene expression for each cluster and tissue, as well as the integrated clusters, please use the “genes” webpage above ",
+    size = "m", 
+    closeOnEsc = TRUE,
+    closeOnClickOutside = FALSE,
+    html = FALSE,
+    type = "success",
+    showConfirmButton = TRUE,
+    showCancelButton = FALSE,
+    confirmButtonText = "OK",
+    confirmButtonCol = "#AEDEF4",
+    timer = 0,
+    imageUrl = "",
+    animation = TRUE
+  )
+ 
+
   
   
   
@@ -229,25 +281,44 @@ server<- function(input,output){
   #output plot
   
   output$genePlot2 <- renderPlot({
-    Sys.sleep(10)
-    FeaturePlot_scCustom(dataset5Input(),split.by="Tissue",num_columns = 2,reduction="Tissue_UMAP",features=(input$gene2))
+    Sys.sleep(5)
+    
+    shinyalert(
+      title = "Note",
+      text = "This page might take 20 seconds to load.",
+      size = "m", 
+      closeOnEsc = TRUE,
+      closeOnClickOutside = FALSE,
+      html = FALSE,
+      type = "success",
+      showConfirmButton = TRUE,
+      showCancelButton = FALSE,
+      confirmButtonText = "OK",
+      confirmButtonCol = "#AEDEF4",
+      timer = 0,
+      imageUrl = "",
+      animation = TRUE
+    )
+    FeaturePlot_scCustom(dataset5Input(),split.by="Tissue",num_columns = 2,reduction="Tissue_UMAP",features=toupper(input$gene2))
+    
+    
   })
+
   
-  
-#  output$genePlot6<-renderPlot({
-    #Sys.sleep(5)
- #   switch(input$prev, 
- #                 "Preview"=FeaturePlot_scCustom(dataset5Input(),reduction="umap",features= (input$gene2)),
- #          "No Preview"= "nothing"
-#                  )
- #   Sys.sleep(10)
-#  })
+  #  output$genePlot6<-renderPlot({
+  #Sys.sleep(5)
+  #   switch(input$prev, 
+  #                 "Preview"=FeaturePlot_scCustom(dataset5Input(),reduction="umap",features= (input$gene2)),
+  #          "No Preview"= "nothing"
+  #                  )
+  #   Sys.sleep(10)
+  #  })
   
   observe({
     observeEvent(input$run,{
       if (input$run=="Preview"){
         output$genePlot6<- renderPlot({
-          FeaturePlot_scCustom(dataset5Input(),reduction="umap",features= (input$gene2))
+          FeaturePlot_scCustom(dataset5Input(),reduction="umap",features= toupper(input$gene2))
         })
       }
       else if (input$run=="No Preview"){
@@ -257,22 +328,22 @@ server<- function(input,output){
           
         })
       }
- 
+      
     })
   })
   
   
-#  output$genePlot6 <- renderPlot({
-#    Sys.sleep(10)
- #   switch(input$preview,
-#    "preview"=FeaturePlot_scCustom(dataset5Input(),reduction="umap",features= (input$gene3))
-#    )
-#  })
+  #  output$genePlot6 <- renderPlot({
+  #    Sys.sleep(10)
+  #   switch(input$preview,
+  #    "preview"=FeaturePlot_scCustom(dataset5Input(),reduction="umap",features= (input$gene3))
+  #    )
+  #  })
   
-
+  
   output$vPlot5 <- renderPlot({
-    Sys.sleep(10)
-    VlnPlot(dataset5Input(),split.by="MainCluster",features = (input$gene2),split.plot=TRUE)
+    Sys.sleep(5)
+    VlnPlot(dataset5Input(),split.by="MainCluster",features =toupper (input$gene2),split.plot=TRUE)
     
     
     

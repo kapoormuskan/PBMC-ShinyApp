@@ -18,6 +18,7 @@ da <-read.csv("data/TH_gene.csv",dec = ",")
 d <-read.csv("data/LN_gene.csv",dec = ",")
 
 # Read the .rds seurat file
+# This is read in global.R
 set_5 <- readRDS("data/ImmuneTissuesAllWithNewReduction.rds")
 
 
